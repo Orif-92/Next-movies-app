@@ -1,32 +1,85 @@
-import Image from 'next/image';
-import { useAuth } from 'src/hooks/useAuth';
-import { RiVipCrown2Line } from 'react-icons/ri';
-import { AiOutlineHourglass, AiOutlineVideoCameraAdd } from 'react-icons/ai';
-import { SubscriptionPlanProps } from './subscription-plan-props';
-import PlanCard from '../plan-card/plan-card';
+import moment from 'moment';
+import { useState } from 'react';
+import { MembershipPlanProps } from './membership-plan.props';
 
-const SubscriptionPlan = ({ products }: SubscriptionPlanProps) => {
-	const { logout } = useAuth();
+const MembershipPlan = ({ subscription }: MembershipPlanProps) => {
+	const [isLoading, setIsLoading] = useState(false);
+
+	const openPortal = async () => {
+		setIsLoading(true);
+		const paylaod = { user_id: subscription.customer.metadata.user_id };
+
+		const response = await fetch('/api/subscription/manage', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(paylaod),
+		});
+
+		const data = await response.json();
+		window.open(data.portal);
+		setIsLoading(false);
+	};
 
 	return (
-		<div className='min-h-screen'>
-			<div className='border-b-2 border-gray-300/20 h-[10vh] flex justify-between items-center px-4 md:px-10'>
-				<Image src={'/logo.svg'} alt={'logo'} width={56} height={56} className={'cursor-pointer object-contain'} />
-				<div onClick={logout} className='cursor-pointer hover:underline'>
-					Logout
+		<div className='mt-6 grid grid-cols-1 gap-x-4 border px-4 py-4 md:grid-cols-4 md:bordder-x-0 md:border-t md:border-b-0 md:pb-0'>
+			<div className='space-y-2 py-4'>
+				<h4 className='text-lg text-[gray]'>Membership & Billing</h4>
+				<button
+					onClick={openPortal}
+					className='h-10 w-3/5 transition-all whitespace-nowrap bg-gray-300 py-2 text-sm font-medium text-black shadow-md hover:bg-gray-200 md:w-4/5'
+				>
+					{isLoading ? 'Loading...' : 'Cancel Membership'}
+				</button>
+			</div>
+
+			<div className='col-span-3'>
+				<div className='flex flex-col justify-between border-b border-white/10 py-4 md:flex-row'>
+					<div>
+						<p className='font-medium'>{subscription.customer.email}</p>
+						<p className='text-[gray]'>Password: ******</p>
+					</div>
+					<div className='md:text-right'>
+						<p className={'membershipLink'}>Change email</p>
+						<p className={'membershipLink'}>Change password</p>
+					</div>
 				</div>
-			</div>
-			<div className='flex flex-col space-y-4 text-center pt-5'>
-				<h1 className='text-2xl md:text-5xl text-shadow-sm'>Flexible pricing for teams of any size.</h1>
-				<p className='text-xl text-shadow'>Relaxing with watchin your favourite movies and tv.</p>
-			</div>
-			<div className='flex justify-center items-center py-20'>
-				<div className='md:px-4 md:grid md:grid-cols-2 lg:grid-cols-3 gap-5 space-y-4 md:space-y-0'>
-					{products.map(product => <PlanCard key={product.id} product={product} />).reverse()}
+
+				<div className='flex flex-col justify-between pt-4 pb-4 md:flex-row md:pb-0'>
+					<div>
+						<div className='flex items-center gap-2'>
+							<span className='py-1 px-3 uppercase rounded bg-white/20'>
+								{subscription.customer.invoice_settings.default_payment_method.card.brand}
+							</span>
+							**** **** **** {subscription.customer.invoice_settings.default_payment_method.card.last4}
+						</div>
+						<p className='mt-4'>
+							Your next billing date is {moment(subscription.current_period_end * 1000).format('DD MMM, yyyy')}
+						</p>
+					</div>
+					<div className='md:text-right'>
+						{isLoading ? (
+							'Loading....'
+						) : (
+							<>
+								<p onClick={openPortal} className='membershipLink'>
+									Manage payment info
+								</p>
+								<p onClick={openPortal} className='membershipLink'>
+									Add backup payment method
+								</p>
+								<p onClick={openPortal} className='membershipLink'>
+									Billing detail
+								</p>
+								<p onClick={openPortal} className='membershipLink'>
+									Change billing day
+								</p>
+							</>
+						)}
+					</div>
 				</div>
 			</div>
 		</div>
 	);
 };
 
-export default SubscriptionPlan;
+export default MembershipPlan;
