@@ -18,9 +18,9 @@ export default function Home({
 	subscription,
 }: HomeProps): JSX.Element {
 	const { modal } = useInfoStore();
-
+	
 	if (!subscription.length) return <SubscriptionPlan products={products} />;
-
+	
 	return (
 		<div className={`relative min-h-screen ${modal && '!h-screen overflow-hidden'}`}>
 			<Head>
@@ -50,52 +50,54 @@ export default function Home({
 
 export const getServerSideProps: GetServerSideProps<HomeProps> = async ({ req }) => {
 	const user_id = req.cookies.user_id;
-
+	
 	if (!user_id) {
 		return {
 			redirect: { destination: '/auth', permanent: false },
 		};
 	}
-
+	
 	const [trending, topRated, tvTopRated, popular, documentary, comedy, family, history, products, subscription] =
-		await Promise.all([
-			fetch(API_REQUEST.trending).then(res => res.json()),
-			fetch(API_REQUEST.top_rated).then(res => res.json()),
-			fetch(API_REQUEST.tv_top_rated).then(res => res.json()),
-			fetch(API_REQUEST.popular).then(res => res.json()),
-			fetch(API_REQUEST.documentary).then(res => res.json()),
-			fetch(API_REQUEST.comedy).then(res => res.json()),
-			fetch(API_REQUEST.family).then(res => res.json()),
-			fetch(API_REQUEST.history).then(res => res.json()),
-			fetch(API_REQUEST.products_list).then(res => res.json()),
-			fetch(`${API_REQUEST.subscription}/${user_id}`).then(res => res.json()),
+	await Promise.all([
+		fetch(API_REQUEST.trending).then(res => res.json()),
+		fetch(API_REQUEST.top_rated).then(res => res.json()),
+		fetch(API_REQUEST.tv_top_rated).then(res => res.json()),
+		fetch(API_REQUEST.popular).then(res => res.json()),
+		fetch(API_REQUEST.documentary).then(res => res.json()),
+		fetch(API_REQUEST.comedy).then(res => res.json()),
+		fetch(API_REQUEST.family).then(res => res.json()),
+		fetch(API_REQUEST.history).then(res => res.json()),
+		fetch(API_REQUEST.products_list).then(res => res.json()),
+		fetch(`${API_REQUEST.subscription}/${user_id}`).then(res => res.json()),
 		]);
-
-	return {
-		props: {
-			trending: trending.results,
-			topRated: topRated.results,
-			tvTopRated: tvTopRated.results,
-			popular: popular.results,
-			documentary: documentary.results,
-			comedy: comedy.results,
-			family: family.results,
-			history: history.results,
-			products: products.products.data,
-			subscription: subscription.subscription.data,
-		},
+		
+		return {
+			props: {
+				trending: trending.results,
+				topRated: topRated.results,
+				tvTopRated: tvTopRated.results,
+				popular: popular.results,
+				documentary: documentary.results,
+				comedy: comedy.results,
+				family: family.results,
+				history: history.results,
+				products: products.products.data,
+				subscription: subscription.subscription.data,
+			},
+		};
 	};
-};
-
-interface HomeProps {
-	trending: IMovie[];
-	topRated: IMovie[];
-	tvTopRated: IMovie[];
-	popular: IMovie[];
-	documentary: IMovie[];
-	comedy: IMovie[];
-	family: IMovie[];
-	history: IMovie[];
-	products: Product[];
-	subscription: string[];
-}
+	
+	interface HomeProps {
+		trending: IMovie[];
+		topRated: IMovie[];
+		tvTopRated: IMovie[];
+		popular: IMovie[];
+		documentary: IMovie[];
+		comedy: IMovie[];
+		family: IMovie[];
+		history: IMovie[];
+		products: Product[];
+		subscription: string[];
+	}
+	
+	
